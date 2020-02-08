@@ -1,0 +1,26 @@
+{
+  "name": "reduplicator",
+  "version": "0.1.0",
+  "description": "Lexical reduplicator for russian words",
+  "keywords": [],
+  "author": {
+    "name": "Mikhail Dudin",
+    "email": "dudin-m@live.ru"
+  },
+  "license": "MIT",
+  "scripts": {
+    "test": "tsc & node ./node_modules/mocha/bin/mocha ./lib/test/tests.js",
+    "run": "tsc & node ./lib/app.js",
+    "debug": "tsc & node inspect ./lib/app.js"
+  },
+  "devDependencies": {
+    "@types/node": "^10.12.18",
+    "typescript": "^3.7.5"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mixaildudin/reduplicator"
+  },
+  "main": "lib/index.js",
+  "types": "lib/index"
+}
