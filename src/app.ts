@@ -1,19 +1,20 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
+import {OccurrenceAwareCollection} from "./occurrenceAwareCollection";
 
 function getRandomArrayItem<T>(array: Array<T>) {
 	return array && array[Math.floor((Math.random() * array.length))];
 }
 
-const corporaPath = path.join(__dirname, '../corpora.txt');
+const corporaPath = path.join(__dirname, '../corpora_test.txt');
 const corporaContents = fs.readFileSync(corporaPath).toString();
 
 const corpora = corporaContents.split(os.EOL);
 
-const tokensToStart = new Set<string>();
+const tokensToStart = new OccurrenceAwareCollection<string>();
 const tokensToFinish = new Set<string>();
-const tokenStorage = new Map<string, Map<string, number>>();
+const tokenStorage = new Map<string, OccurrenceAwareCollection<string>>();
 
 const allowedSymbolsRegex = /^[а-яА-ЯёЁ ]+$/;
 const sentenceSplitRegex = /:\)|:\(|\?|!|\.|;|,|\(|\)|$/;
@@ -21,17 +22,10 @@ const sentenceSplitRegex = /:\)|:\(|\?|!|\.|;|,|\(|\)|$/;
 function processTokens(prevToken: string, currentToken: string, nextToken: string) {
 	const key = prevToken ? getKeyForMultipleTokens(prevToken, currentToken) : currentToken;
 
-	if (!tokenStorage.has(key)) {
-		const newMap = new Map<string, number>();
-		newMap.set(nextToken, 1);
-		tokenStorage.set(key, newMap);
+	if (tokenStorage.has(key)) {
+		tokenStorage.get(key).add(nextToken);
 	} else {
-		const countsForToken = tokenStorage.get(key);
-		if (countsForToken.has(nextToken)) {
-			countsForToken.set(nextToken, countsForToken.get(nextToken) + 1);
-		} else {
-			countsForToken.set(nextToken, 1);
-		}
+		tokenStorage.set(key, new OccurrenceAwareCollection(nextToken));
 	}
 }
 
@@ -82,33 +76,14 @@ for (const line of corpora) {
 	}
 }
 
-/*for (const x of tokenStorage) {
-	console.log(x);
-}*/
-
-tokenStorage.forEach(nextTokenCounts => {
-	let occasionSum = 0;
-	nextTokenCounts.forEach(count => occasionSum += count);
-
-	const delta = 1 / occasionSum;
-	let lastBoundary = 0;
-
-	for (const [nextToken, occasionCount] of nextTokenCounts) {
-		let newBoundary = lastBoundary + (delta * occasionCount);
-		nextTokenCounts.set(nextToken, newBoundary);
-
-		lastBoundary = newBoundary;
-	}
-});
-
 const minWordCount = 10;
 const maxWordCount = 20;
 let retryCount = 100;
 
 while (retryCount) {
-	// const tokenToStart = getRandomArrayItem(Array.from(tokensToStart));
-	const tokenToStart = "1";
-	console.log('tokenToStart: ' + tokenToStart);
+	const tokenToStart = tokensToStart.getRandom().value;
+	// const tokenToStart = "1";
+	// console.log('tokenToStart: ' + tokenToStart);
 
 	const result = generate(tokenToStart, minWordCount, maxWordCount);
 
@@ -116,7 +91,7 @@ while (retryCount) {
 		retryCount--;
 	} else {
 		console.log(result.join(' '));
-		break;
+		// break;
 	}
 }
 
@@ -126,10 +101,10 @@ function generate(tokenToStart: string, minWordCount: number, maxWordCount: numb
 	let lastGeneratedToken = tokenToStart;
 
 	while (true) {
-		const nextTokensWithOccasionIntervals = tokenStorage.get(getKeyForMultipleTokens(preLastGeneratedToken, lastGeneratedToken))
+		const possibleNextTokens = tokenStorage.get(getKeyForMultipleTokens(preLastGeneratedToken, lastGeneratedToken))
 													?? tokenStorage.get(lastGeneratedToken);
 
-		if (!nextTokensWithOccasionIntervals) {
+		if (!possibleNextTokens) {
 			if (resultTokens.length > minWordCount) {
 				// закончили!
 				return resultTokens;
@@ -139,7 +114,7 @@ function generate(tokenToStart: string, minWordCount: number, maxWordCount: numb
 			}
 		}
 
-		const nextToken = getNextRandomToken(nextTokensWithOccasionIntervals);
+		const nextToken = possibleNextTokens.getRandom()?.value;
 		// TODO: а если не сгенерировался nextToken? надо подумать
 		if (nextToken) {
 			resultTokens.push(nextToken);
@@ -156,21 +131,4 @@ function generate(tokenToStart: string, minWordCount: number, maxWordCount: numb
 		preLastGeneratedToken = lastGeneratedToken;
 		lastGeneratedToken = nextToken;
 	}
-}
-
-function getNextRandomToken(nextTokensWithOccasionIntervals: Map<string, number>): string {
-	const random = Math.random();
-
-	let lowerBoundary = 0;
-	let result = null;
-
-	nextTokensWithOccasionIntervals.forEach((tokenUpperBoundary, token) => {
-		if (random > lowerBoundary && random < tokenUpperBoundary) {
-			result = token;
-		}
-
-		lowerBoundary = tokenUpperBoundary;
-	});
-
-	return result;
 }
