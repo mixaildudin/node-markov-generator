@@ -13,10 +13,31 @@ const corpora = corporaContents.split(os.EOL);
 
 const tokensToStart = new Set<string>();
 const tokensToFinish = new Set<string>();
-const words = new Map<string, Map<string, number>>();
+const tokenStorage = new Map<string, Map<string, number>>();
 
 const allowedSymbolsRegex = /^[а-яА-ЯёЁ ]+$/;
-const sentenceSplitRegex = /:\)|:\(|\?|!|\.|;|,|$/;
+const sentenceSplitRegex = /:\)|:\(|\?|!|\.|;|,|\(|\)|$/;
+
+function processTokens(prevToken: string, currentToken: string, nextToken: string) {
+	const key = prevToken ? getKeyForMultipleTokens(prevToken, currentToken) : currentToken;
+
+	if (!tokenStorage.has(key)) {
+		const newMap = new Map<string, number>();
+		newMap.set(nextToken, 1);
+		tokenStorage.set(key, newMap);
+	} else {
+		const countsForToken = tokenStorage.get(key);
+		if (countsForToken.has(nextToken)) {
+			countsForToken.set(nextToken, countsForToken.get(nextToken) + 1);
+		} else {
+			countsForToken.set(nextToken, 1);
+		}
+	}
+}
+
+function getKeyForMultipleTokens(...tokens: string[]): string {
+	return tokens.reduce((cur, next) => cur ? `${cur}|${next}` : next, '');
+}
 
 for (const line of corpora) {
 	//const parts = line.trim().match(/(\b[а-яА-я]+\b)|((?<=[а-яА-я])[\.,!?])/g);
@@ -27,6 +48,10 @@ for (const line of corpora) {
 
 	for (const sentence of sentences) {
 		const tokens = sentence.split(' ');
+
+		/*if (tokens.indexOf('1') >= 0) {
+			debugger;
+		}*/
 
 		if (!tokens.length) {
 			continue;
@@ -41,26 +66,27 @@ for (const line of corpora) {
 		}
 
 		for (let i = 0; i < tokens.length - 1; i++) {
-			const currentToken = tokens[i].toLowerCase();
-			const nextToken = tokens[i + 1].toLowerCase();
+			const currentToken = tokens[i];
+			/*if (currentToken === '1') {
+				debugger;
+			}*/
+			const nextToken = tokens[i + 1];
 
-			if (!words.has(currentToken)) {
-				const newMap = new Map<string, number>();
-				newMap.set(nextToken, 1);
-				words.set(currentToken, newMap);
-			} else {
-				const countsForToken = words.get(currentToken);
-				if (countsForToken.has(nextToken)) {
-					countsForToken.set(nextToken, countsForToken.get(nextToken) + 1);
-				} else {
-					countsForToken.set(nextToken, 1);
-				}
+			processTokens(null, currentToken, nextToken);
+
+			if (i > 0) {
+				const previousToken = tokens[i - 1];
+				processTokens(previousToken, currentToken, nextToken);
 			}
 		}
 	}
 }
 
-words.forEach(nextTokenCounts => {
+/*for (const x of tokenStorage) {
+	console.log(x);
+}*/
+
+tokenStorage.forEach(nextTokenCounts => {
 	let occasionSum = 0;
 	nextTokenCounts.forEach(count => occasionSum += count);
 
@@ -75,33 +101,33 @@ words.forEach(nextTokenCounts => {
 	}
 });
 
-// const tokenToStart = getRandomArrayItem(Array.from(tokensToStart));
-const tokenToStart = "привет";
-if (!tokenToStart) {
-	throw new Error('Could not pick up a word to start');
-}
-
 const minWordCount = 10;
-const maxWordCount = 30;
-let retryCount = 50;
+const maxWordCount = 20;
+let retryCount = 100;
 
 while (retryCount) {
-	const result = generate(tokenToStart, minWordCount, maxWordCount, true);
+	// const tokenToStart = getRandomArrayItem(Array.from(tokensToStart));
+	const tokenToStart = "1";
+	console.log('tokenToStart: ' + tokenToStart);
+
+	const result = generate(tokenToStart, minWordCount, maxWordCount);
 
 	if (result == null){
 		retryCount--;
 	} else {
-		console.log(result);
+		console.log(result.join(' '));
 		break;
 	}
 }
 
-function generate(tokenToStart: string, minWordCount: number, maxWordCount: number, failureWhenMaxAchieved: boolean = true): string[] {
+function generate(tokenToStart: string, minWordCount: number, maxWordCount: number, failureIfMaxLengthExceeded: boolean = true): string[] {
 	const resultTokens: string[] = [tokenToStart];
-	let lastUsedToken = tokenToStart;
+	let preLastGeneratedToken: string = null; // TODO: нейминг ужасный. надо подумать. и вообще тут нужно как-то покрасивее сделать :(
+	let lastGeneratedToken = tokenToStart;
 
 	while (true) {
-		const nextTokensWithOccasionIntervals = words.get(lastUsedToken);
+		const nextTokensWithOccasionIntervals = tokenStorage.get(getKeyForMultipleTokens(preLastGeneratedToken, lastGeneratedToken))
+													?? tokenStorage.get(lastGeneratedToken);
 
 		if (!nextTokensWithOccasionIntervals) {
 			if (resultTokens.length > minWordCount) {
@@ -114,6 +140,7 @@ function generate(tokenToStart: string, minWordCount: number, maxWordCount: numb
 		}
 
 		const nextToken = getNextRandomToken(nextTokensWithOccasionIntervals);
+		// TODO: а если не сгенерировался nextToken? надо подумать
 		if (nextToken) {
 			resultTokens.push(nextToken);
 		}
@@ -123,10 +150,11 @@ function generate(tokenToStart: string, minWordCount: number, maxWordCount: numb
 		}
 
 		if (resultTokens.length === maxWordCount) {
-			return failureWhenMaxAchieved ? null : resultTokens;
+			return failureIfMaxLengthExceeded ? null : resultTokens;
 		}
 
-		lastUsedToken = nextToken;
+		preLastGeneratedToken = lastGeneratedToken;
+		lastGeneratedToken = nextToken;
 	}
 }
 
