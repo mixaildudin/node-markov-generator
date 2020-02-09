@@ -1,7 +1,7 @@
 {
-  "name": "reduplicator",
+  "name": "simple-text-generator",
   "version": "0.1.0",
-  "description": "Lexical reduplicator for russian words",
+  "description": "Simple text generator",
   "keywords": [],
   "author": {
     "name": "Mikhail Dudin",
@@ -9,7 +9,6 @@
   },
   "license": "MIT",
   "scripts": {
-    "test": "tsc & node ./node_modules/mocha/bin/mocha ./lib/test/tests.js",
     "run": "tsc & node ./lib/app.js",
     "debug": "tsc & node inspect ./lib/app.js"
   },
@@ -19,7 +18,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/mixaildudin/reduplicator"
+    "url": "https://github.com/mixaildudin/text-generator"
   },
   "main": "lib/index.js",
   "types": "lib/index"
