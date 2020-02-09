@@ -68,7 +68,7 @@ export class TextGenerator {
 	}
 
 	public generate(options?: GeneratorOptions): string[] {
-		const minWordCount = options?.minWordCount ?? 7;
+		const minWordCount = options?.minWordCount ?? 5;
 		const maxWordCount = options?.maxWordCount ?? 20;
 		let retryCount = options?.retryCount ?? 100;
 
@@ -102,9 +102,9 @@ export class TextGenerator {
 			const possibleNextTokenAwareOfContext = this.tokenStorage.get(TextGenerator.getKeyForMultipleTokens(preLastGeneratedToken, lastGeneratedToken));
 			const possibleSimpleNextTokens = this.tokenStorage.get(lastGeneratedToken);
 
-			// если есть "более контекстная" цепочка, то подкинем монетку, чтобы решить, использовать ее или нет
+			// если есть "более контекстная" цепочка, то "подкинем монетку", чтобы решить, использовать ее или нет
 			// TODO: как-то нормально это надо переписать, может? а может, и не надо :)
-			const possibleNextTokens = possibleNextTokenAwareOfContext && Math.random() < 0.5 ? possibleNextTokenAwareOfContext : possibleSimpleNextTokens;
+			const possibleNextTokens = possibleNextTokenAwareOfContext && Math.random() < 0.75 ? possibleNextTokenAwareOfContext : possibleSimpleNextTokens;
 
 			if (!possibleNextTokens) {
 				if (resultTokens.length > minWordCount) {
