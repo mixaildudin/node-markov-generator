@@ -3,10 +3,6 @@ import * as path from 'path';
 import * as os from 'os';
 import {OccurrenceAwareCollection} from "./occurrenceAwareCollection";
 
-function getRandomArrayItem<T>(array: Array<T>) {
-	return array && array[Math.floor((Math.random() * array.length))];
-}
-
 const corporaPath = path.join(__dirname, '../corpora_test.txt');
 const corporaContents = fs.readFileSync(corporaPath).toString();
 
@@ -15,6 +11,8 @@ const corpora = corporaContents.split(os.EOL);
 const tokensToStart = new OccurrenceAwareCollection<string>();
 const tokensToFinish = new Set<string>();
 const tokenStorage = new Map<string, OccurrenceAwareCollection<string>>();
+
+const isDebug = process.argv.includes('debug');
 
 const allowedSymbolsRegex = /^[а-яА-ЯёЁ ]+$/;
 const sentenceSplitRegex = /:\)|:\(|\?|!|\.|;|,|\(|\)|$/;
@@ -43,10 +41,6 @@ for (const line of corpora) {
 	for (const sentence of sentences) {
 		const tokens = sentence.split(' ');
 
-		/*if (tokens.indexOf('1') >= 0) {
-			debugger;
-		}*/
-
 		if (!tokens.length) {
 			continue;
 		}
@@ -61,9 +55,6 @@ for (const line of corpora) {
 
 		for (let i = 0; i < tokens.length - 1; i++) {
 			const currentToken = tokens[i];
-			/*if (currentToken === '1') {
-				debugger;
-			}*/
 			const nextToken = tokens[i + 1];
 
 			processTokens(null, currentToken, nextToken);
@@ -76,22 +67,24 @@ for (const line of corpora) {
 	}
 }
 
-const minWordCount = 10;
+const minWordCount = 7;
 const maxWordCount = 20;
 let retryCount = 100;
 
 while (retryCount) {
 	const tokenToStart = tokensToStart.getRandom().value;
 	// const tokenToStart = "1";
-	// console.log('tokenToStart: ' + tokenToStart);
 
 	const result = generate(tokenToStart, minWordCount, maxWordCount);
 
 	if (result == null){
 		retryCount--;
 	} else {
-		console.log(result.join(' '));
-		// break;
+		if (isDebug) {
+			console.log(result.join(' '));
+		} else {
+			break;
+		}
 	}
 }
 
@@ -101,8 +94,14 @@ function generate(tokenToStart: string, minWordCount: number, maxWordCount: numb
 	let lastGeneratedToken = tokenToStart;
 
 	while (true) {
-		const possibleNextTokens = tokenStorage.get(getKeyForMultipleTokens(preLastGeneratedToken, lastGeneratedToken))
-													?? tokenStorage.get(lastGeneratedToken);
+		/*const possibleNextTokens = tokenStorage.get(getKeyForMultipleTokens(preLastGeneratedToken, lastGeneratedToken))
+													?? tokenStorage.get(lastGeneratedToken);*/
+		const possibleNextTokenAwareOfContext = tokenStorage.get(getKeyForMultipleTokens(preLastGeneratedToken, lastGeneratedToken));
+		const possibleSimpleNextTokens = tokenStorage.get(lastGeneratedToken);
+
+		// если есть "более контекстная" цепочка, то подкинем монетку, чтобы решить, использовать ее или нет
+		// TODO: как-то нормально это надо переписать, может? а может, и не надо :)
+		const possibleNextTokens = possibleNextTokenAwareOfContext && Math.random() < 0.5 ? possibleNextTokenAwareOfContext : possibleSimpleNextTokens;
 
 		if (!possibleNextTokens) {
 			if (resultTokens.length > minWordCount) {
