@@ -68,12 +68,12 @@ export class TextGenerator {
 	}
 
 	public generate(options?: GeneratorOptions): string[] {
-		const minWordCount = options?.minWordCount ?? 5;
+		const minWordCount = options?.minWordCount ?? 7;
 		const maxWordCount = options?.maxWordCount ?? 20;
 		let retryCount = options?.retryCount ?? 100;
 
-		while (retryCount) {
-			const tokenToStart = options?.tokenToStart ?? this.tokensToStart.getRandom().value;
+		do {
+			const tokenToStart = options?.tokenToStart ?? this.tokensToStart.getRandom();
 
 			const result = this.generateInternal(tokenToStart, minWordCount, maxWordCount);
 
@@ -87,6 +87,7 @@ export class TextGenerator {
 				}
 			}
 		}
+		while (retryCount);
 
 		return null;
 	}
@@ -116,7 +117,7 @@ export class TextGenerator {
 				}
 			}
 
-			const nextToken = possibleNextTokens.getRandom()?.value;
+			const nextToken = possibleNextTokens.getRandom();
 			// TODO: а если не сгенерировался nextToken? надо подумать
 			if (nextToken) {
 				resultTokens.push(nextToken);

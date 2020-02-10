@@ -24,26 +24,16 @@ export class OccurrenceAwareCollection<TValue> {
 		this.shouldUpdateProbabilities = true;
 	}
 
-	public getRandom(): OccurrenceInfo<TValue> {
+	public getRandom(): TValue {
 		this.ensureProbabilitiesUpdated();
 
 		const random = Math.random();
-		let result: OccurrenceInfo<TValue> = null;
 
 		for (const [value, occurenceInfo] of this.values.entries()) {
 			if (occurenceInfo.intervalFrom <= random && random < occurenceInfo.intervalTo) {
-				result = this.mapToOccurrenceInfo(value, occurenceInfo);
+				return value;
 			}
 		}
-
-		return result;
-	}
-
-	private mapToOccurrenceInfo(value: TValue, x: OccurrenceInfoInternal): OccurrenceInfo<TValue> {
-		return {
-			value,
-			numberOfOccurrences: x.numberOfOccurrences
-		};
 	}
 
 	private ensureProbabilitiesUpdated(): void {
@@ -65,11 +55,6 @@ export class OccurrenceAwareCollection<TValue> {
 
 		this.shouldUpdateProbabilities = false;
 	}
-}
-
-export interface OccurrenceInfo<T> {
-	value: T;
-	numberOfOccurrences: number;
 }
 
 interface OccurrenceInfoInternal {
