@@ -19,7 +19,6 @@ export class TextGenerator {
 		for (const line of corpora) {
 			//const parts = line.trim().match(/(\b[а-яА-я]+\b)|((?<=[а-яА-я])[\.,!?])/g);
 
-			// TODO: разбить на токены
 			const sentences = line.trim().toLowerCase().split(sentenceSplitRegex).map(s => s.trim())
 				.filter(t => allowedSymbolsRegex.test(t)); // TODO: пока так, надо подумать, что с этим сделать, потому что, если пропускать слова в середине предложения, то вероятности уже неправильные будут
 
@@ -73,7 +72,7 @@ export class TextGenerator {
 		let retryCount = options?.retryCount ?? 100;
 
 		do {
-			const tokenToStart = options?.tokenToStart ?? this.tokensToStart.getRandom();
+			const tokenToStart = options?.tokenToStart?.toLowerCase() ?? this.tokensToStart.getRandom();
 
 			const result = this.generateInternal(tokenToStart, minWordCount, maxWordCount);
 
@@ -105,7 +104,7 @@ export class TextGenerator {
 
 			// если есть "более контекстная" цепочка, то "подкинем монетку", чтобы решить, использовать ее или нет
 			// TODO: как-то нормально это надо переписать, может? а может, и не надо :)
-			const possibleNextTokens = possibleNextTokenAwareOfContext && Math.random() < 0.75 ? possibleNextTokenAwareOfContext : possibleSimpleNextTokens;
+			const possibleNextTokens = possibleNextTokenAwareOfContext && Math.random() < 0.5 ? possibleNextTokenAwareOfContext : possibleSimpleNextTokens;
 
 			if (!possibleNextTokens) {
 				if (resultTokens.length > minWordCount) {
