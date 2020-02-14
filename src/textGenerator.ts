@@ -17,8 +17,7 @@ export class TextGenerator {
 		const sentenceSplitRegex = /:\)|:\(|\?|!|\.|;|,|\(|\)|$/;
 
 		for (const line of corpora) {
-			//const parts = line.trim().match(/(\b[а-яА-я]+\b)|((?<=[а-яА-я])[\.,!?])/g);
-
+			// TODO: подумать, как правильнее разбивать исходный текст на слова
 			const sentences = line.trim().toLowerCase().split(sentenceSplitRegex).map(s => s.trim())
 				.filter(t => allowedSymbolsRegex.test(t)); // TODO: пока так, надо подумать, что с этим сделать, потому что, если пропускать слова в середине предложения, то вероятности уже неправильные будут
 
@@ -58,7 +57,7 @@ export class TextGenerator {
 		if (this.tokenStorage.has(key)) {
 			this.tokenStorage.get(key).add(nextToken);
 		} else {
-			this.tokenStorage.set(key, new OccurrenceAwareCollection(nextToken));
+			this.tokenStorage.set(key, new OccurrenceAwareCollection([nextToken]));
 		}
 	}
 
@@ -69,12 +68,13 @@ export class TextGenerator {
 	public generate(options?: GeneratorOptions): string[] {
 		const minWordCount = options?.minWordCount ?? 7;
 		const maxWordCount = options?.maxWordCount ?? 20;
+		const contextAwarenessDegree = options?.contextUsageDegree ?? 0.5;
 		let retryCount = options?.retryCount ?? 100;
 
 		do {
 			const tokenToStart = options?.tokenToStart?.toLowerCase() ?? this.tokensToStart.getRandom();
 
-			const result = this.generateInternal(tokenToStart, minWordCount, maxWordCount);
+			const result = this.generateInternal(tokenToStart, minWordCount, maxWordCount, contextAwarenessDegree);
 
 			if (result == null){
 				retryCount--;
@@ -91,20 +91,17 @@ export class TextGenerator {
 		return null;
 	}
 
-	private generateInternal(tokenToStart: string, minWordCount: number, maxWordCount: number): string[] {
+	private generateInternal(tokenToStart: string, minWordCount: number, maxWordCount: number, contextAwarenessDegree: number): string[] {
 		const resultTokens: string[] = [tokenToStart];
 		let preLastGeneratedToken: string = null; // TODO: нейминг ужасный. надо подумать. и вообще тут нужно как-то покрасивее сделать :(
 		let lastGeneratedToken = tokenToStart;
 
 		while (true) {
-			/*const possibleNextTokens = tokenStorage.get(getKeyForMultipleTokens(preLastGeneratedToken, lastGeneratedToken))
-														?? tokenStorage.get(lastGeneratedToken);*/
 			const possibleNextTokenAwareOfContext = this.tokenStorage.get(TextGenerator.getKeyForMultipleTokens(preLastGeneratedToken, lastGeneratedToken));
 			const possibleSimpleNextTokens = this.tokenStorage.get(lastGeneratedToken);
 
 			// если есть "более контекстная" цепочка, то "подкинем монетку", чтобы решить, использовать ее или нет
-			// TODO: как-то нормально это надо переписать, может? а может, и не надо :)
-			const possibleNextTokens = possibleNextTokenAwareOfContext && Math.random() < 0.5 ? possibleNextTokenAwareOfContext : possibleSimpleNextTokens;
+			const possibleNextTokens = possibleNextTokenAwareOfContext && Math.random() < contextAwarenessDegree ? possibleNextTokenAwareOfContext : possibleSimpleNextTokens;
 
 			if (!possibleNextTokens) {
 				if (resultTokens.length > minWordCount) {

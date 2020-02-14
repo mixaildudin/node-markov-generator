@@ -5,10 +5,8 @@ export class OccurrenceAwareCollection<TValue> {
 
 	private shouldUpdateProbabilities: boolean = false;
 
-	constructor(item?: TValue) {
-		if (item) {
-			this.add(item);
-		}
+	constructor(initialValues?: TValue[]) {
+		initialValues && initialValues.forEach(v => this.add(v));
 	}
 
 	public add(value: TValue): void {
