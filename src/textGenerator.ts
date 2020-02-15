@@ -16,6 +16,8 @@ export class TextGenerator {
 		const allowedSymbolsRegex = /^[0-9а-яА-ЯёЁ\- ]+$/;
 		const sentenceSplitRegex = /:|\?|!|\.|;|,|\(|\)| - | — |$/;
 
+		const minLastTokenLength = 4;
+
 		for (const line of corpora) {
 			const sentences = line.trim().toLowerCase().split(sentenceSplitRegex).map(s => s.trim())
 				.filter(t => allowedSymbolsRegex.test(t));
@@ -31,7 +33,7 @@ export class TextGenerator {
 
 				const lastToken = tokens[tokens.length - 1];
 				// не будем делать терминальными совсем уж короткие токены
-				if (lastToken.length > 2) {
+				if (lastToken.length >= minLastTokenLength) {
 					this.tokensToFinish.add(lastToken);
 				}
 
