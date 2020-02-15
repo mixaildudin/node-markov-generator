@@ -13,13 +13,12 @@ export class TextGenerator {
 		const corporaContents = fs.readFileSync(corporaPath).toString();
 		const corpora = corporaContents.split(os.EOL);
 
-		const allowedSymbolsRegex = /^[а-яА-ЯёЁ ]+$/;
-		const sentenceSplitRegex = /:\)|:\(|\?|!|\.|;|,|\(|\)|$/;
+		const allowedSymbolsRegex = /^[0-9а-яА-ЯёЁ\- ]+$/;
+		const sentenceSplitRegex = /:|\?|!|\.|;|,|\(|\)| - | — |$/;
 
 		for (const line of corpora) {
-			// TODO: подумать, как правильнее разбивать исходный текст на слова
 			const sentences = line.trim().toLowerCase().split(sentenceSplitRegex).map(s => s.trim())
-				.filter(t => allowedSymbolsRegex.test(t)); // TODO: пока так, надо подумать, что с этим сделать, потому что, если пропускать слова в середине предложения, то вероятности уже неправильные будут
+				.filter(t => allowedSymbolsRegex.test(t));
 
 			for (const sentence of sentences) {
 				const tokens = sentence.split(' ');
