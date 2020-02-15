@@ -98,11 +98,11 @@ export class TextGenerator {
 		let lastGeneratedToken = tokenToStart;
 
 		while (true) {
-			const possibleNextTokenAwareOfContext = this.tokenStorage.get(TextGenerator.getKeyForMultipleTokens(preLastGeneratedToken, lastGeneratedToken));
+			const possibleNextTokenAwareOfContext = preLastGeneratedToken ? this.tokenStorage.get(TextGenerator.getKeyForMultipleTokens(preLastGeneratedToken, lastGeneratedToken)) : null;
 			const possibleSimpleNextTokens = this.tokenStorage.get(lastGeneratedToken);
 
 			// если есть "более контекстная" цепочка, то "подкинем монетку", чтобы решить, использовать ее или нет
-			const possibleNextTokens = possibleNextTokenAwareOfContext && Math.random() < contextAwarenessDegree ? possibleNextTokenAwareOfContext : possibleSimpleNextTokens;
+			const possibleNextTokens = possibleNextTokenAwareOfContext && (Math.random() < contextAwarenessDegree) ? possibleNextTokenAwareOfContext : possibleSimpleNextTokens;
 
 			if (!possibleNextTokens) {
 				if (resultTokens.length > minWordCount) {
