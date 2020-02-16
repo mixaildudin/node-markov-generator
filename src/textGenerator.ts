@@ -4,7 +4,7 @@ import {TokenCollection} from './tokenCollection';
 import {GeneratorOptions} from './generatorOptions';
 
 export class TextGenerator {
-	private readonly isDebug = process.argv.includes('debug');
+	private readonly isDebug = process.argv.includes('--node-markov-generator-debug');
 	private readonly tokensToStart = new TokenCollection();
 	private readonly tokensToFinish = new Set<string>();
 	private readonly tokenStorage = new Map<string, TokenCollection>();
