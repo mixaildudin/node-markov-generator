@@ -1,7 +1,7 @@
 # node-markov-generator
 
 This simple generator emits short sentences based on the given
-text corpus using a Markov chain. 
+text corpus using a [Markov chain](https://en.wikipedia.org/wiki/Markov_chain). 
 
 ### Using a what?
 To put it simply - it works kinda like word suggestions that you
