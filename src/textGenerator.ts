@@ -1,13 +1,13 @@
 import * as fs from "fs";
 import * as os from "os";
-import {OccurrenceAwareCollection} from './occurrenceAwareCollection';
+import {TokenCollection} from './tokenCollection';
 import {GeneratorOptions} from './generatorOptions';
 
 export class TextGenerator {
 	private readonly isDebug = process.argv.includes('debug');
-	private readonly tokensToStart = new OccurrenceAwareCollection<string>();
+	private readonly tokensToStart = new TokenCollection();
 	private readonly tokensToFinish = new Set<string>();
-	private readonly tokenStorage = new Map<string, OccurrenceAwareCollection<string>>();
+	private readonly tokenStorage = new Map<string, TokenCollection>();
 
 	constructor(corporaPath: string) {
 		const corporaContents = fs.readFileSync(corporaPath).toString();
@@ -58,7 +58,7 @@ export class TextGenerator {
 		if (this.tokenStorage.has(key)) {
 			this.tokenStorage.get(key).add(nextToken);
 		} else {
-			this.tokenStorage.set(key, new OccurrenceAwareCollection([nextToken]));
+			this.tokenStorage.set(key, new TokenCollection([nextToken]));
 		}
 	}
 

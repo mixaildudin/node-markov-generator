@@ -1,15 +1,15 @@
-export class OccurrenceAwareCollection<TValue> {
-	private values = new Map<TValue, OccurrenceInfoInternal>();
+export class TokenCollection {
+	private values = new Map<string, TokenOccurrenceInfo>();
 
 	private totalCount: number = 0;
 
 	private shouldUpdateProbabilities: boolean = false;
 
-	constructor(initialValues?: TValue[]) {
+	constructor(initialValues?: string[]) {
 		initialValues && initialValues.forEach(v => this.add(v));
 	}
 
-	public add(value: TValue): void {
+	public add(value: string): void {
 		this.totalCount++;
 
 		const existing = this.values.get(value);
@@ -22,7 +22,7 @@ export class OccurrenceAwareCollection<TValue> {
 		this.shouldUpdateProbabilities = true;
 	}
 
-	public getRandom(): TValue {
+	public getRandom(): string {
 		this.ensureProbabilitiesUpdated();
 
 		const random = Math.random();
@@ -55,7 +55,7 @@ export class OccurrenceAwareCollection<TValue> {
 	}
 }
 
-interface OccurrenceInfoInternal {
+interface TokenOccurrenceInfo {
 	numberOfOccurrences: number;
 	intervalFrom?: number;
 	intervalTo?: number;
