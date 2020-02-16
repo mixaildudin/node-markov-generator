@@ -44,9 +44,9 @@ You can use the following optional parameters:
 
 1. `tokenToStart` - which word should be used to start the generation process.
 If unspecified, a random word is used; 
-2. `minWordCount` - minimum number of words that is supposed to be in 
+2. `minWordCount` - minimum number of words that are supposed to be in 
 the generated sentence. Default is `7`;
-3. `maxWordCount` - maximum number of words that is supposed to be in
+3. `maxWordCount` - maximum number of words that are supposed to be in
 the generated sentence. Default is `20`;
 4. `retryCount` - since the generation process is rather probabilistic,
 sometimes the generator might not be able to get a result on the first try,
