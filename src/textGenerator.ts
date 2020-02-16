@@ -9,16 +9,16 @@ export class TextGenerator {
 	private readonly tokensToFinish = new Set<string>();
 	private readonly tokenStorage = new Map<string, TokenCollection>();
 
-	constructor(corporaPath: string) {
-		const corporaContents = fs.readFileSync(corporaPath).toString();
-		const corpora = corporaContents.split(os.EOL);
+	constructor(corpusPath: string) {
+		const corpusContents = fs.readFileSync(corpusPath).toString();
+		const corpus = corpusContents.split(os.EOL);
 
 		const allowedSymbolsRegex = /^[0-9а-яА-ЯёЁ\- ]+$/;
 		const sentenceSplitRegex = /:|\?|!|\.|;|,|\(|\)| - | — |$/;
 
 		const minLastTokenLength = 4;
 
-		for (const line of corpora) {
+		for (const line of corpus) {
 			const sentences = line.trim().toLowerCase().split(sentenceSplitRegex).map(s => s.trim())
 				.filter(t => allowedSymbolsRegex.test(t));
 
@@ -69,13 +69,13 @@ export class TextGenerator {
 	public generate(options?: GeneratorOptions): string[] {
 		const minWordCount = options?.minWordCount ?? 7;
 		const maxWordCount = options?.maxWordCount ?? 20;
-		const contextAwarenessDegree = options?.contextUsageDegree ?? 0.5;
+		const contextUsageDegree = options?.contextUsageDegree ?? 0.5;
 		let retryCount = options?.retryCount ?? 100;
 
 		do {
 			const tokenToStart = options?.tokenToStart?.toLowerCase() ?? this.tokensToStart.getRandom();
 
-			const result = this.generateInternal(tokenToStart, minWordCount, maxWordCount, contextAwarenessDegree);
+			const result = this.generateInternal(tokenToStart, minWordCount, maxWordCount, contextUsageDegree);
 
 			if (result == null){
 				retryCount--;
