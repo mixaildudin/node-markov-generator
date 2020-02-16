@@ -32,7 +32,7 @@ export class TextGenerator {
 				this.tokensToStart.add(tokens[0]);
 
 				const lastToken = tokens[tokens.length - 1];
-				// не будем делать терминальными совсем уж короткие токены
+				// won't consider tokens that are too short as terminal tokens
 				if (lastToken.length >= minLastTokenLength) {
 					this.tokensToFinish.add(lastToken);
 				}
@@ -94,28 +94,28 @@ export class TextGenerator {
 
 	private generateInternal(tokenToStart: string, minWordCount: number, maxWordCount: number, contextAwarenessDegree: number): string[] {
 		const resultTokens: string[] = [tokenToStart];
-		let preLastGeneratedToken: string = null; // TODO: нейминг ужасный. надо подумать. и вообще тут нужно как-то покрасивее сделать :(
+		let preLastGeneratedToken: string = null; // TODO: yeah, bad naming :(
 		let lastGeneratedToken = tokenToStart;
 
 		while (true) {
 			const possibleNextTokenAwareOfContext = preLastGeneratedToken ? this.tokenStorage.get(TextGenerator.getKeyForMultipleTokens(preLastGeneratedToken, lastGeneratedToken)) : null;
 			const possibleSimpleNextTokens = this.tokenStorage.get(lastGeneratedToken);
 
-			// если есть "более контекстная" цепочка, то "подкинем монетку", чтобы решить, использовать ее или нет
+			// if we have a more contextual chain, let's flip a coin to decide whether to use it or not
 			const possibleNextTokens = possibleNextTokenAwareOfContext && (Math.random() < contextAwarenessDegree) ? possibleNextTokenAwareOfContext : possibleSimpleNextTokens;
 
 			if (!possibleNextTokens) {
 				if (resultTokens.length > minWordCount) {
-					// закончили!
+					// finished!
 					return resultTokens;
 				} else {
-					// не смогли построить достаточно длинную цепочку
+					// could not build a chain which is long enough
 					return null;
 				}
 			}
 
 			const nextToken = possibleNextTokens.getRandom();
-			// TODO: а если не сгенерировался nextToken? надо подумать
+			// TODO: what is no nextToken is generated? gotta think about it
 			if (nextToken) {
 				resultTokens.push(nextToken);
 			}
