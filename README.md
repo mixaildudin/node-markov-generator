@@ -42,7 +42,7 @@ transformation you need.
 to control the process.
 You can use the following optional parameters:
 
-1. `tokenToStart` - which word should be used to start the generation process.
+1. `tokenToStart` - which word should be used to start the Markov chain.
 If unspecified, a random word is used; 
 2. `minWordCount` - minimum number of words that are supposed to be in 
 the generated sentence. Default is `7`;
