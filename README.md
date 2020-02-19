@@ -15,7 +15,7 @@ next one might be.
 ### Basic usage
 ```typescript
 import * as path from 'path';
-import {TextGenerator} from 'simple-text-generator';
+import {TextGenerator} from 'node-markov-generator';
 
 // specify path to the text file to be used to "train" the generator
 const corpusPath = path.join(__dirname, '../corpus.txt');
@@ -42,7 +42,7 @@ transformation you need.
 to control the process.
 You can use the following optional parameters:
 
-1. `tokenToStart` - which word should be used to start the Markov chain - and therefore 
+1. `wordToStart` - which word should be used to start the Markov chain - and therefore 
 the result sentence. If unspecified, a random word is used; 
 2. `minWordCount` - minimum number of words that are supposed to be in 
 the generated sentence. Default is `7`;
@@ -59,7 +59,7 @@ sentences you get. Default is `0.5`.
 In case you want to specify any of these parameters, do it like this:
 ```typescript
 const result = generator.generate({
-    tokenToStart: 'word',
+    wordToStart: 'word',
     minWordCount: 5,
     contextUsageDegree: 0.75
 });

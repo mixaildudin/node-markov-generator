@@ -2,4 +2,4 @@ lib
 node_modules
 *.7z
 .idea
-corpora.txt
+corpus.txt

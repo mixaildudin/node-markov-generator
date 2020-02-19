@@ -1,3 +1,4 @@
+// TODO: rename it to WordCollection? Token is more generic, not sure if it is needed here
 export class TokenCollection {
 	private values = new Map<string, TokenOccurrenceInfo>();
 

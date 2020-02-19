@@ -5,9 +5,9 @@ import {GeneratorOptions} from './generatorOptions';
 
 export class TextGenerator {
 	private readonly isDebug = process.argv.includes('--node-markov-generator-debug');
-	private readonly tokensToStart = new TokenCollection();
-	private readonly tokensToFinish = new Set<string>();
-	private readonly tokenStorage = new Map<string, TokenCollection>();
+	private readonly wordsToStart = new TokenCollection();
+	private readonly wordsToFinish = new Set<string>();
+	private readonly wordStorage = new Map<string, TokenCollection>();
 
 	constructor(corpusPath: string) {
 		const corpusContents = fs.readFileSync(corpusPath).toString();
@@ -16,54 +16,54 @@ export class TextGenerator {
 		const allowedSymbolsRegex = /^[0-9а-яА-ЯёЁ\- ]+$/;
 		const sentenceSplitRegex = /:|\?|!|\.|;|,|\(|\)| - | — |$/;
 
-		const minLastTokenLength = 4;
+		const minLastWordLength = 4;
 
 		for (const line of corpus) {
 			const sentences = line.trim().toLowerCase().split(sentenceSplitRegex).map(s => s.trim())
 				.filter(t => allowedSymbolsRegex.test(t));
 
 			for (const sentence of sentences) {
-				const tokens = sentence.split(' ');
+				const words = sentence.split(' ');
 
-				if (!tokens.length) {
+				if (!words.length) {
 					continue;
 				}
 
-				this.tokensToStart.add(tokens[0]);
+				this.wordsToStart.add(words[0]);
 
-				const lastToken = tokens[tokens.length - 1];
-				// won't consider tokens that are too short as terminal tokens
-				if (lastToken.length >= minLastTokenLength) {
-					this.tokensToFinish.add(lastToken);
+				const lastWord = words[words.length - 1];
+				// won't consider words that are too short as terminal words
+				if (lastWord.length >= minLastWordLength) {
+					this.wordsToFinish.add(lastWord);
 				}
 
-				for (let i = 0; i < tokens.length - 1; i++) {
-					const currentToken = tokens[i];
-					const nextToken = tokens[i + 1];
+				for (let i = 0; i < words.length - 1; i++) {
+					const currentWord = words[i];
+					const nextWord = words[i + 1];
 
-					this.processTokens(null, currentToken, nextToken);
+					this.processWords(null, currentWord, nextWord);
 
 					if (i > 0) {
-						const previousToken = tokens[i - 1];
-						this.processTokens(previousToken, currentToken, nextToken);
+						const previousWord = words[i - 1];
+						this.processWords(previousWord, currentWord, nextWord);
 					}
 				}
 			}
 		}
 	}
 
-	private processTokens(prevToken: string, currentToken: string, nextToken: string) {
-		const key = prevToken ? TextGenerator.getKeyForMultipleTokens(prevToken, currentToken) : currentToken;
+	private processWords(prevWord: string, currentWord: string, nextWord: string) {
+		const key = prevWord ? TextGenerator.getKeyForMultipleWords(prevWord, currentWord) : currentWord;
 
-		if (this.tokenStorage.has(key)) {
-			this.tokenStorage.get(key).add(nextToken);
+		if (this.wordStorage.has(key)) {
+			this.wordStorage.get(key).add(nextWord);
 		} else {
-			this.tokenStorage.set(key, new TokenCollection([nextToken]));
+			this.wordStorage.set(key, new TokenCollection([nextWord]));
 		}
 	}
 
-	private static getKeyForMultipleTokens(...tokens: string[]): string {
-		return tokens.reduce((cur, next) => cur ? `${cur}|${next}` : next, '');
+	private static getKeyForMultipleWords(...words: string[]): string {
+		return words.reduce((cur, next) => cur ? `${cur}|${next}` : next, '');
 	}
 
 	public generate(options?: GeneratorOptions): string[] {
@@ -73,9 +73,9 @@ export class TextGenerator {
 		let retryCount = options?.retryCount ?? 100;
 
 		do {
-			const tokenToStart = options?.tokenToStart?.toLowerCase() ?? this.tokensToStart.getRandom();
+			const wordToStart = options?.wordToStart?.toLowerCase() ?? this.wordsToStart.getRandom();
 
-			const result = this.generateInternal(tokenToStart, minWordCount, maxWordCount, contextUsageDegree);
+			const result = this.generateInternal(wordToStart, minWordCount, maxWordCount, contextUsageDegree);
 
 			if (result == null){
 				retryCount--;
@@ -92,44 +92,44 @@ export class TextGenerator {
 		return null;
 	}
 
-	private generateInternal(tokenToStart: string, minWordCount: number, maxWordCount: number, contextAwarenessDegree: number): string[] {
-		const resultTokens: string[] = [tokenToStart];
-		let preLastGeneratedToken: string = null; // TODO: yeah, bad naming :(
-		let lastGeneratedToken = tokenToStart;
+	private generateInternal(wordToStart: string, minWordCount: number, maxWordCount: number, contextAwarenessDegree: number): string[] {
+		const resultWords: string[] = [wordToStart];
+		let preLastGeneratedWord: string = null; // TODO: yeah, bad naming :(
+		let lastGeneratedWord = wordToStart;
 
 		while (true) {
-			const possibleNextTokenAwareOfContext = preLastGeneratedToken ? this.tokenStorage.get(TextGenerator.getKeyForMultipleTokens(preLastGeneratedToken, lastGeneratedToken)) : null;
-			const possibleSimpleNextTokens = this.tokenStorage.get(lastGeneratedToken);
+			const possibleNextWordAwareOfContext = preLastGeneratedWord ? this.wordStorage.get(TextGenerator.getKeyForMultipleWords(preLastGeneratedWord, lastGeneratedWord)) : null;
+			const possibleSimpleNextWords = this.wordStorage.get(lastGeneratedWord);
 
 			// if we have a more contextual chain, let's flip a coin to decide whether to use it or not
-			const possibleNextTokens = possibleNextTokenAwareOfContext && (Math.random() < contextAwarenessDegree) ? possibleNextTokenAwareOfContext : possibleSimpleNextTokens;
+			const possibleNextWords = possibleNextWordAwareOfContext && (Math.random() < contextAwarenessDegree) ? possibleNextWordAwareOfContext : possibleSimpleNextWords;
 
-			if (!possibleNextTokens) {
-				if (resultTokens.length > minWordCount) {
+			if (!possibleNextWords) {
+				if (resultWords.length > minWordCount) {
 					// finished!
-					return resultTokens;
+					return resultWords;
 				} else {
 					// could not build a chain which is long enough
 					return null;
 				}
 			}
 
-			const nextToken = possibleNextTokens.getRandom();
-			// TODO: what is no nextToken is generated? gotta think about it
-			if (nextToken) {
-				resultTokens.push(nextToken);
+			const nextWord = possibleNextWords.getRandom();
+			// TODO: what is no nextWord is generated? gotta think about it
+			if (nextWord) {
+				resultWords.push(nextWord);
 			}
 
-			if (resultTokens.length > minWordCount && this.tokensToFinish.has(nextToken)) {
-				return resultTokens;
+			if (resultWords.length > minWordCount && this.wordsToFinish.has(nextWord)) {
+				return resultWords;
 			}
 
-			if (resultTokens.length === maxWordCount) {
+			if (resultWords.length === maxWordCount) {
 				return null;
 			}
 
-			preLastGeneratedToken = lastGeneratedToken;
-			lastGeneratedToken = nextToken;
+			preLastGeneratedWord = lastGeneratedWord;
+			lastGeneratedWord = nextWord;
 		}
 	}
 }
