@@ -13,8 +13,8 @@ export class TextGenerator {
 		const corpusContents = fs.readFileSync(corpusPath).toString();
 		const corpus = corpusContents.split(os.EOL);
 
-		const allowedSymbolsRegex = /^[0-9а-яА-ЯёЁ\- ]+$/;
-		const sentenceSplitRegex = /:|\?|!|\.|;|,|\(|\)| - | — |$/;
+		const allowedSymbolsRegex = /^[\p{L}\d'\- ]+$/u; // TODO: this will only work with nodejs v10
+		const sentenceSplitRegex = /:|\?|!|\.|;|,|\(|\)| - | — |"|$/;
 
 		const minLastWordLength = 4;
 
