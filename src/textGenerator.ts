@@ -1,5 +1,4 @@
 import * as fs from "fs";
-import * as os from "os";
 import {TokenCollection} from './tokenCollection';
 import {GeneratorOptions} from './generatorOptions';
 
@@ -9,9 +8,16 @@ export class TextGenerator {
 	private readonly wordsToFinish = new Set<string>();
 	private readonly wordStorage = new Map<string, TokenCollection>();
 
-	constructor(corpusPath: string) {
-		const corpusContents = fs.readFileSync(corpusPath).toString();
-		const corpus = corpusContents.split(os.EOL);
+	constructor(input: string|string[]) {
+		let corpus: string[];
+
+		if (Array.isArray(input)) {
+			corpus = input; // if input is a string[], it is the corpus itself
+		} else {
+			// if input is a string, it is a path to the corpus
+			const corpusContents = fs.readFileSync(input).toString();
+			corpus = corpusContents.split(/\r?\n/); // platform independent split
+		}
 
 		const allowedSymbolsRegex = /^[\p{L}\d'\- ]+$/u; // TODO: this will only work with nodejs v10
 		const sentenceSplitRegex = /:|\?|!|\.|;|,|\(|\)| - | — |"|$/;
@@ -114,7 +120,7 @@ export class TextGenerator {
 			}
 
 			const nextWord = possibleNextWords.getRandom();
-			// TODO: what is no nextWord is generated? gotta think about it
+			// TODO: what if no nextWord is generated? gotta think about it
 			if (nextWord) {
 				resultWords.push(nextWord);
 			}
