@@ -3,7 +3,6 @@ import {TokenCollection} from './tokenCollection';
 import {GeneratorOptions} from './generatorOptions';
 
 export class TextGenerator {
-	private readonly isDebug = process.argv.includes('--node-markov-generator-debug');
 	private readonly wordsToStart = new TokenCollection();
 	private readonly wordsToFinish = new Set<string>();
 	private readonly wordStorage = new Map<string, TokenCollection>();
@@ -84,17 +83,24 @@ export class TextGenerator {
 			const result = this.generateInternal(wordToStart, minWordCount, maxWordCount, contextUsageDegree);
 
 			retryCount--;
-			if (result){
-				if (this.isDebug) {
-					console.log(result.join(' '));
-				} else {
-					return result;
-				}
+			if (result) {
+				return result;
 			}
 		}
 		while (retryCount);
 
 		return null;
+	}
+
+	public generateSentence(options?: GeneratorOptions): string {
+		const generated = this.generate(options);
+
+		if (generated?.length) {
+			const [firstWord, ...rest] = generated;
+			return [firstWord[0].toUpperCase() + firstWord.substr(1)].concat(rest).join(' ') + '.';
+		} else {
+			return null;
+		}
 	}
 
 	private generateInternal(wordToStart: string, minWordCount: number, maxWordCount: number, contextAwarenessDegree: number): string[] {
