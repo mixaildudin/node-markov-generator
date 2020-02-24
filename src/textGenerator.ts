@@ -77,9 +77,8 @@ export class TextGenerator {
 
 			const result = this.generateInternal(wordToStart, minWordCount, maxWordCount, contextUsageDegree);
 
-			if (result == null){
-				retryCount--;
-			} else {
+			retryCount--;
+			if (result){
 				if (this.isDebug) {
 					console.log(result.join(' '));
 				} else {
@@ -105,7 +104,7 @@ export class TextGenerator {
 			const possibleNextWords = possibleNextWordAwareOfContext && (Math.random() < contextAwarenessDegree) ? possibleNextWordAwareOfContext : possibleSimpleNextWords;
 
 			if (!possibleNextWords) {
-				if (resultWords.length > minWordCount) {
+				if (resultWords.length >= minWordCount) {
 					// finished!
 					return resultWords;
 				} else {
