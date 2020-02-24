@@ -14,32 +14,44 @@ next one might be.
 
 ### Basic usage
 ```typescript
+import {TextGenerator} from 'node-markov-generator';
+
+/* array of your strings which will be used to "train" the generator */
+const corpus = ['This is my text.', 'Markov chains are great', 'Yet another string! This is just awesome.'];
+const generator = new TextGenerator(corpus);
+
+const result = generator.generateSentence();
+console.log(result);
+```
+
+Here you create an instance of `TextGenerator` passing an array of strings to it - 
+it represents your text corpus which will be used to "train" the generator. The more strings/sentences
+you pass, the more diverse results you get, so you would better pass like hundreds of them - or even more!
+
+`TextGenerator.generateSentence()` returns a `string` or `null` in case it was unable to generate a sentence.
+
+### Reading the text corpus from an external file
+If you have your texts in an external file, you can pass the path to it as an argument for
+ `TextGenerator`'s constructor like this:
+```typescript
 import * as path from 'path';
 import {TextGenerator} from 'node-markov-generator';
 
-// specify path to the text file to be used to "train" the generator
-const corpusPath = path.join(__dirname, '../corpus.txt');
+// in this example my texts are located in corpus.txt
+const corpusPath = path.join(__dirname, 'corpus.txt');
 const generator = new TextGenerator(corpusPath);
-
-const result = generator.generate();
-
-// result is a string[]
-if (result) {
-    console.log(result.join(' '));
-} else {
-    console.log('Oops!');
-}
 ```
 
-Here you have the `TextGenerator.generate()` method which returns a `string[]`
-as a result or `null` in case it was unable to generate a sentence. 
+### Getting result as a raw array of strings
+If you do not need your result to look like a sentence (i.e. a string starting with a capital and ending with a '.'),
+consider using `TextGenerator.generate()` method instead of `generateSentence()`. It returns
+the result sentence as an array of words - or `null` if the generation process failed.
 
-You might want to `join` elements of the resulting array or use any
-transformation you need.
+Then you might want to `join` the items or apply any other transformation you like. 
 
 ### Options
-`TextGenerator.generate()` accepts `options` parameter that you might use
-to control the process.
+Both `TextGenerator.generateSentence()` and `TextGenerator.generate()` methods accept `options`
+parameter that you might use to control the generation process.
 You can use the following optional parameters:
 
 1. `wordToStart` - which word should be used to start the Markov chain - and therefore 
@@ -58,7 +70,7 @@ sentences you get. Default is `0.5`.
 
 In case you want to specify any of these parameters, do it like this:
 ```typescript
-const result = generator.generate({
+const result = generator.generateSentence({
     wordToStart: 'word',
     minWordCount: 5,
     contextUsageDegree: 0.75
