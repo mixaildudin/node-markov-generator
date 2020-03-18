@@ -1,6 +1,7 @@
 import * as fs from "fs";
 import {TokenCollection} from './tokenCollection';
 import {GeneratorOptions} from './generatorOptions';
+import {SentenceHelper} from './sentenceHelper';
 
 export class TextGenerator {
 	private readonly wordsToStart = new TokenCollection();
@@ -18,14 +19,11 @@ export class TextGenerator {
 			corpus = corpusContents.split(/\r?\n/); // platform independent split
 		}
 
-		const allowedSymbolsRegex = /^[\p{L}\d'\- ]+$/u; // TODO: this will only work with nodejs v10
-		const sentenceSplitRegex = /:|\?|!|\.|;|,|\(|\)| - | — |"|$/;
-
 		const minLastWordLength = 4;
 
 		for (const line of corpus) {
-			const sentences = line.trim().toLowerCase().split(sentenceSplitRegex).map(s => s.trim())
-				.filter(t => allowedSymbolsRegex.test(t));
+			const sentences = SentenceHelper.splitIntoSentences(line.trim().toLowerCase()).map(s => s.trim())
+				.filter(SentenceHelper.areAllCharsValid);
 
 			for (const sentence of sentences) {
 				const words = sentence.split(' ');
