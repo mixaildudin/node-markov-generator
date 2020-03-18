@@ -77,7 +77,7 @@ const result = generator.generateSentence({
 });
 ```
 
-### Credits
+## Credits
 [regexpu](https://github.com/mathiasbynens/regexpu) is used for transpiling 
 regular expressions with [unicode property escapes](https://github.com/tc39/proposal-regexp-unicode-property-escapes) 
 into good old and nodejs8-compatible ES5 format.
