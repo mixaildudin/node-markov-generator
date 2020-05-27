@@ -2,7 +2,14 @@
   "name": "node-markov-generator",
   "version": "0.4.1",
   "description": "Simple text generator for Node.js that uses a Markov chain",
-  "keywords": ["markov", "chain", "text", "generation", "generator", "sentence"],
+  "keywords": [
+    "markov",
+    "chain",
+    "text",
+    "generation",
+    "generator",
+    "sentence"
+  ],
   "author": {
     "name": "Mikhail Dudin",
     "email": "dudin-m@live.ru"
