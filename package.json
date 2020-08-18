@@ -1,6 +1,6 @@
 {
   "name": "node-markov-generator",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "description": "Simple text generator for Node.js that uses a Markov chain",
   "keywords": [
     "markov",
