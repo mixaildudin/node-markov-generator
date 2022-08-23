@@ -22,10 +22,14 @@ export class TextGenerator {
 		const minLastWordLength = 4;
 
 		for (const line of corpus) {
-			const sentences = SentenceHelper.splitIntoSentences(line.trim().toLowerCase()).map(s => s.trim())
-				.filter(SentenceHelper.areAllCharsValid);
+			const sentences = SentenceHelper.splitIntoSentences(line.trim().toLowerCase());
 
-			for (const sentence of sentences) {
+			for (const s of sentences) {
+				const sentence = s.trim();
+				if (!SentenceHelper.areAllCharsValid(sentence)) {
+					continue;
+				}
+
 				const words = sentence.split(' ');
 
 				if (!words.length) {
@@ -95,7 +99,7 @@ export class TextGenerator {
 
 		if (generated?.length) {
 			const [firstWord, ...rest] = generated;
-			return [firstWord[0].toUpperCase() + firstWord.substr(1)].concat(rest).join(' ') + '.';
+			return [firstWord[0].toUpperCase() + firstWord.substring(1), ...rest].join(' ') + '.';
 		} else {
 			return null;
 		}
