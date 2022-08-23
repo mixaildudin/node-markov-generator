@@ -65,7 +65,7 @@ sometimes the generator might not be able to get a result on the first try,
 so it may need some more attempts. Default is `100`;
 5. `contextUsageDegree` - a number from `0` to `1` To avoid diving into details, this
 parameter defines the degree of similarity between the generated sentences and
-the sentences in the source text corpus. The less the number is, the more nonsence
+the sentences in the source text corpus. The smaller the number is, the more nonsense
 sentences you get. Default is `0.5`.
 
 In case you want to specify any of these parameters, do it like this:

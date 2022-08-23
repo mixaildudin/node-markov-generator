@@ -1,4 +1,4 @@
-import * as fs from "fs";
+import * as fs from 'fs';
 import {TokenCollection} from './tokenCollection';
 import {GeneratorOptions} from './generatorOptions';
 import {SentenceHelper} from './sentenceHelper';
