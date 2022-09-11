@@ -26,7 +26,7 @@ console.log(result);
 
 Here you create an instance of `TextGenerator` passing an array of strings to it - 
 it represents your text corpus which will be used to "train" the generator. The more strings/sentences
-you pass, the more diverse results you get, so you would better pass like hundreds of them - or even more!
+you pass, the more diverse results you get, so you'd better pass like hundreds of them - or even more!
 
 `TextGenerator.generateSentence()` returns a `string` or `null` in case it was unable to generate a sentence.
 
